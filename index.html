@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고려대학교 GPA 피드백 매니저 - 문과대학 성적 분석기</title>
+    <meta name="description" content="고려대학교 문과대학 사회학과 학우들을 위한 스마트 학점 계산 및 맞춤형 성적 분석, 피드백 서비스">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Style File -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Background Sparkles / Decorative Elements -->
+    <div class="bg-gradient-overlay"></div>
+    <div class="circle-blur circle-1"></div>
+    <div class="circle-blur circle-2"></div>
+
+    <div class="app-container">
+        <!-- 1. LOGIN / SIGNUP SCREEN -->
+        <main id="auth-screen" class="screen-card">
+            <div class="auth-header">
+                <div class="logo-wrapper animate-bounce-subtle">
+                    <span class="univ-logo-symbol">🐯</span>
+                </div>
+                <h1>고려대학교 GPA 피드백 매니저</h1>
+                <p class="subtitle">문과대학 사회학과 학우를 위한 학기말 성적 분석 & 컨설팅</p>
+            </div>
+            
+            <form id="login-form" class="modern-form">
+                <div class="input-group">
+                    <label for="student-id"><i class="fa-regular fa-id-card"></i> 학번</label>
+                    <input type="text" id="student-id" placeholder="예: 2023120000 (10자리)" required maxlength="10" minlength="10" pattern="[0-9]{10}">
+                </div>
+                <div class="input-group">
+                    <label for="student-name"><i class="fa-regular fa-user"></i> 이름</label>
+                    <input type="text" id="student-name" placeholder="이름을 입력해 주세요" required>
+                </div>
+                <div class="input-group">
+                    <label for="student-password"><i class="fa-solid fa-lock"></i> 비밀번호</label>
+                    <input type="password" id="student-password" placeholder="비밀번호 설정" required>
+                </div>
+                <button type="submit" class="btn-primary" id="btn-login-submit">
+                    <span>매니저 시작하기</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p><i class="fa-solid fa-circle-info"></i> 학기말 성적 공시 시점의 정보를 입력해 관리할 수 있습니다.</p>
+            </div>
+        </main>
+
+        <!-- 2. MAIN DASHBOARD SCREEN (Hidden initially) -->
+        <div id="dashboard-screen" class="dashboard-grid d-none">
+            <!-- Sidebar / User Profile -->
+            <aside class="sidebar-panel">
+                <div class="brand-header">
+                    <span class="sidebar-logo-emoji">🐯</span>
+                    <h2>KOREA UNIV.</h2>
+                </div>
+                
+                <div class="user-profile-card">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="user-details">
+                        <h3 id="user-display-name">홍길동</h3>
+                        <p id="user-display-id">2023120000</p>
+                        <span class="dept-badge">사회학과</span>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Navigation / Mode Select -->
+                <nav class="sidebar-nav">
+                    <div class="nav-section-title">목표 설정 및 관리</div>
+                    <div class="target-gpa-container">
+                        <label for="target-gpa">목표 GPA (4.5 기준)</label>
+                        <div class="target-input-wrapper">
+                            <input type="number" id="target-gpa" step="0.05" min="0.00" max="4.50" value="4.00">
+                            <span class="max-label">/ 4.5</span>
+                            <button id="btn-save-target" class="btn-icon-check" title="저장"><i class="fa-solid fa-floppy-disk"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="nav-section-title" style="margin-top: 25px;">기타 졸업 인증 요건</div>
+                    <div class="grad-requirements-container">
+                        <label class="checkbox-container sidebar-checkbox">
+                            <input type="checkbox" id="grad-english-status">
+                            <span class="checkmark"></span>
+                            공인 영어성적 취득
+                        </label>
+                        <label class="checkbox-container sidebar-checkbox" style="margin-top: 12px;">
+                            <input type="checkbox" id="grad-hanja-status">
+                            <span class="checkmark"></span>
+                            본교 한자 3급 패스
+                        </label>
+                    </div>
+
+                    <div class="nav-section-title" style="margin-top: 25px;">Gemini API 설정</div>
+                    <div class="grad-requirements-container" style="padding: 12px 16px;">
+                        <label for="gemini-api-key" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Gemini API Key</label>
+                        <div class="target-input-wrapper">
+                            <input type="password" id="gemini-api-key" placeholder="API Key 입력" style="font-size: 0.8rem; padding: 8px 10px; width: 100%;">
+                            <button id="btn-save-api-key" class="btn-icon-check" title="저장" style="padding: 8px 10px;"><i class="fa-solid fa-floppy-disk"></i></button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-logout" id="btn-logout-action">
+                        <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Top Header -->
+                <header class="dashboard-header">
+                    <div class="header-title-area">
+                        <p class="greeting-prefix">반갑습니다, 호랑이 학우님!</p>
+                        <h1 class="page-title">학기말 성적 대시보드</h1>
+                    </div>
+                    <div class="current-semester-selector">
+                        <label for="current-semester-select">분석 대상 학기:</label>
+                        <select id="current-semester-select">
+                            <option value="1-1">1학년 1학기</option>
+                            <option value="1-2">1학년 2학기</option>
+                            <option value="2-1">2학년 1학기</option>
+                            <option value="2-2">2학년 2학기</option>
+                            <option value="3-1">3학년 1학기</option>
+                            <option value="3-2">3학년 2학기</option>
+                            <option value="4-1">4학년 1학기</option>
+                            <option value="4-2">4학년 2학기</option>
+                        </select>
+                    </div>
+                </header>
+
+                <!-- Stats Grid (Overview Cards) -->
+                <section class="stats-overview-grid" aria-label="성적 요약 정보">
+                    <!-- Stat Card 1: GPA -->
+                    <article class="stat-card accent-card">
+                        <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="stat-content">
+                            <h3>선택 학기 GPA</h3>
+                            <div class="stat-value" id="current-gpa-value">0.00</div>
+                            <p class="stat-desc" id="gpa-comparison-desc">목표까지 -0.00 필요</p>
+                        </div>
+                    </article>
+
+                    <!-- Stat Card 2: Graduation Progress -->
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-medal"></i></div>
+                        <div class="stat-content">
+                            <h3>총 이수 학점 (졸업)</h3>
+                            <div class="stat-value" id="total-credits-value">0 / 130</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="graduation-progress-fill" style="width: 0%"></div>
+                            </div>
+                            <p class="stat-desc" id="graduation-progress-percent">진행률 0%</p>
+                        </div>
+                    </article>
+
+                    <!-- Stat Card 3: Semester Prediction -->
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div class="stat-content">
+                            <h3>졸업 예상 시점</h3>
+                            <div class="stat-value" id="remaining-semesters-value">- 학기</div>
+                            <p class="stat-desc" id="remaining-semesters-desc">평균 18학점 수강 기준</p>
+                        </div>
+                    </article>
+
+                    <!-- Stat Card 4: Major/General Ratio -->
+                    <article class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-balance-scale"></i></div>
+                        <div class="stat-content">
+                            <h3>전공 / 교양 비율</h3>
+                            <div class="ratio-text-row">
+                                <span class="badge major-bg" id="major-credits-label">전공 0학점</span>
+                                <span class="badge general-bg" id="general-credits-label">교양 0학점</span>
+                            </div>
+                            <div class="progress-bar-container split-progress">
+                                <div class="progress-bar-major" id="major-ratio-fill" style="width: 50%"></div>
+                                <div class="progress-bar-general" id="general-ratio-fill" style="width: 50%"></div>
+                            </div>
+                            <p class="stat-desc" id="major-general-ratio-desc">이수 균형도 체크 중...</p>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Two-Column Layout (Data Input & Feedback Analysis) -->
+                <div class="content-body-grid">
+                    <!-- Column 1: Grade Entry & Table -->
+                    <section class="card-panel input-panel">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-pen-to-square"></i> <span id="selected-semester-title">1학년 1학기</span> 성적 입력</h2>
+                            <p class="panel-subtitle">수강한 과목을 등록해 성적을 관리하세요.</p>
+                        </div>
+
+                        <!-- Form to Add Course -->
+                        <form id="add-course-form" class="course-entry-form">
+                            <div class="form-row-top">
+                                <div class="input-field-wrapper flex-3">
+                                    <label for="course-name">과목명</label>
+                                    <input type="text" id="course-name" placeholder="예: 사회학적상상력" required>
+                                </div>
+                                <div class="input-field-wrapper flex-2">
+                                    <label for="course-type">이수 구분</label>
+                                    <select id="course-type" required>
+                                        <option value="전공필수">전공필수</option>
+                                        <option value="전공선택">전공선택</option>
+                                        <option value="교양필수">교양필수</option>
+                                        <option value="교양선택">교양선택</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row-bottom">
+                                <div class="input-field-wrapper flex-1">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" id="course-is-pnp">
+                                        <span class="checkmark"></span>
+                                        P/NP 과목 여부
+                                    </label>
+                                </div>
+
+                                <div class="input-field-wrapper flex-1" id="grade-select-wrapper">
+                                    <label for="course-grade">성적</label>
+                                    <select id="course-grade">
+                                        <option value="A+">A+ (4.5)</option>
+                                        <option value="A">A (4.0)</option>
+                                        <option value="B+">B+ (3.5)</option>
+                                        <option value="B">B (3.0)</option>
+                                        <option value="C+">C+ (2.5)</option>
+                                        <option value="C">C (2.0)</option>
+                                        <option value="D+">D+ (1.5)</option>
+                                        <option value="D">D (1.0)</option>
+                                        <option value="E">E (0.5)</option>
+                                        <option value="F">F (0.0)</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-field-wrapper flex-1 d-none" id="pnp-select-wrapper">
+                                    <label for="course-pnp-grade">P/NP 결과</label>
+                                    <select id="course-pnp-grade">
+                                        <option value="P">Pass (이수)</option>
+                                        <option value="NP">Nonpass (미이수)</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-field-wrapper flex-1">
+                                    <label for="course-credits">학점</label>
+                                    <input type="number" id="course-credits" min="1" max="6" value="3" required>
+                                </div>
+
+                                <div class="input-field-wrapper flex-btn">
+                                    <button type="submit" class="btn-add" id="btn-add-course">
+                                        <i class="fa-solid fa-plus"></i> 추가
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Course List Table -->
+                        <div class="table-container">
+                            <table class="modern-table" id="courses-table">
+                                <thead>
+                                    <tr>
+                                        <th>과목명</th>
+                                        <th>이수 구분</th>
+                                        <th>학점</th>
+                                        <th>성적</th>
+                                        <th class="text-center">관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="courses-list-body">
+                                    <!-- Dynamic rows loaded here -->
+                                    <tr class="empty-row-placeholder">
+                                        <td colspan="5" class="text-center">이 학기에 등록된 과목이 없습니다. 새로운 과목을 추가해 보세요!</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Column 2: Feedback & Report -->
+                    <section class="card-panel feedback-panel">
+                        <div class="panel-header crimson-header">
+                            <h2><i class="fa-solid fa-quote-left"></i> 성적 피드백 & 분석 리포트</h2>
+                            <p class="panel-subtitle">현재까지 입력된 데이터를 기반으로 분석한 결과입니다.</p>
+                        </div>
+
+                        <!-- Feedback Tabs / Content Container -->
+                        <div class="feedback-content-area">
+                            <!-- AI Mentor Feedback Card -->
+                            <article class="feedback-card highlight-ai-card" id="ai-mentor-feedback">
+                                <div class="card-header-icon"><span class="animate-pulse-subtle" style="font-size: 1.5rem;">🐯</span></div>
+                                <div class="feedback-text" style="width: 100%;">
+                                    <div class="ai-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; width: 100%; flex-wrap: wrap; gap: 10px;">
+                                        <h4 style="margin-bottom: 0;">AI 호랑이 선배의 1:1 맞춤 멘토링</h4>
+                                        <button class="btn-generate-ai" id="btn-generate-ai" style="background: linear-gradient(135deg, var(--accent), #e5b822); color: #1e1c18; border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.25); transition: all 0.3s;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI 피드백 생성</button>
+                                    </div>
+                                    <div class="ai-feedback-box" id="ai-feedback-response" style="background: rgba(255, 255, 255, 0.01); border: 1.5px dashed var(--accent-glow); border-radius: var(--radius-sm); padding: 14px; margin-top: 10px;">
+                                        <p class="feedback-details" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0;">학습 데이터와 졸업 요건을 기반으로 졸업생 선배 AI가 실시간 맞춤 멘토링을 작성해 줍니다. 오른쪽 위의 버튼을 클릭하여 조언을 받아보세요!</p>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- Target GPA Feedback -->
+                            <article class="feedback-card" id="gpa-target-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-bullseye text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>목표 학점 대비 피드백</h4>
+                                    <p class="feedback-details">학점을 산출하면 맞춤 피드백이 제공됩니다.</p>
+                                </div>
+                            </article>
+
+                            <!-- Balance Check Feedback -->
+                            <article class="feedback-card" id="balance-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-sliders text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>전공 및 교양 균형 분석</h4>
+                                    <p class="feedback-details">이수 완료된 학점을 바탕으로 조언을 제공합니다.</p>
+                                </div>
+                            </article>
+
+                            <!-- General Required Checklist -->
+                            <article class="feedback-card" id="general-required-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-book-open text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>고려대학교 필수 교양 이수 상태</h4>
+                                    <p class="feedback-details">교양필수 과목 총 8개 중 미이수 항목을 분석합니다.</p>
+                                    <div class="checklist-grid" id="general-checklist-container">
+                                        <!-- Checkboxes will populate here -->
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- Major Required Checklist -->
+                            <article class="feedback-card" id="major-required-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-brain text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>사회학과 필수 전공 이수 상태</h4>
+                                    <p class="feedback-details">사회학과 전공필수 과목 총 4개 중 미이수 항목을 분석합니다.</p>
+                                    <div class="checklist-grid" id="major-checklist-container">
+                                        <!-- Checkboxes will populate here -->
+                                    </div>
+                                </div>
+                            </article>
+
+                            <!-- Weak Subject Warning -->
+                            <article class="feedback-card" id="weak-subject-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-triangle-exclamation text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>과목군 취약 분야 주의 경고</h4>
+                                    <p class="feedback-details">특정 분야(영어, 심리 등) 과목 중 성적이 저조한 항목을 모니터링합니다.</p>
+                                </div>
+                            </article>
+
+                            <!-- Graduation Roadmap & Requirements Summary -->
+                            <article class="feedback-card" id="graduation-roadmap-feedback">
+                                <div class="card-header-icon"><i class="fa-solid fa-calendar-check text-crimson"></i></div>
+                                <div class="feedback-text">
+                                    <h4>종합 졸업 요건 & 소요 연수 예측</h4>
+                                    <p class="feedback-details">학점 및 공인 영어성적, 한자 3급 이수 여부를 종합하여 남은 졸업 기간을 예측합니다.</p>
+                                </div>
+                            </article>
+
+                            <!-- Recommended Honey Courses (꿀교양) -->
+                            <article class="feedback-card d-none" id="honey-courses-recommendation">
+                                <div class="card-header-icon"><i class="fa-solid fa-champagne-glasses text-gold"></i></div>
+                                <div class="feedback-text">
+                                    <h4>추천드리는 고려대학교 "꿀교양" 과목</h4>
+                                    <p class="feedback-details">목표 평점을 빠르게 올리기 위해 학점 취득이 쉬운 과목들을 수강해 보세요!</p>
+                                    <div class="honey-courses-list" id="honey-courses-container">
+                                        <!-- Dynamic badges/cards for honey courses -->
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Script File -->
+    <script src="app.js"></script>
+</body>
+</html>
